@@ -1,16 +1,30 @@
+from selenium import webdriver
 from preflow import *
-from buy_ticket import *
+from buyticket import *
 import time
+import sched, time
+
+s = sched.scheduler(time.time, time.sleep)
 
 domain = "https://tixcraft.com"
-#event_path = "/activity/detail/2018_Mayn"
-event_path = "/activity/detail/2018_GLAY"
+event_path = "/activity/detail/2018_Mayn"
+#event_path = "/activity/detail/2018_GLAY"
 
-driver = get_driver()
+def waited_funcs(url):
+    href = buy_ticket(driver, domain, url[len(domain):])
+    print(domain + href)
+    confirm_ticket(driver, domain, href)
 
-time.sleep(10)
 
-get_ready(driver, domain, domain + event_path)
-link = buy_ticket(driver, domain, domain + event_path)
-confirm_ticket(driver, domain, domain + link)
+driver = webdriver.Firefox()
+login_facebook(driver)
+go_event_page(driver, domain, event_path)
+url = find_game_path(driver, domain)
+print(url)
+
+formattime = "2017 12 16 10:59:55"
+timestamp = time.mktime(time.strptime(formattime,"%Y %m %d %H:%M:%S"))
+
+s.enterabs(timestamp, 100, waited_funcs, kwargs={'url': url})
+s.run()
 
